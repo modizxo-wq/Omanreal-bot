@@ -9,31 +9,6 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 API_URL = "https://api.omanreal.com/api/Listing/GetListingsAndClusters?includeMapMarkers=true"
 
-TARGET_LOCATIONS = ["muscat", "al amrat", "barka", "yiti"]
-SPECIAL_BARKA = ["fuleij", "al fuleij", "fuleij al maamura", "al fuleij al maamoura"]
-
-sent_ids = set()
-
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "✅ OmanReal API Bot is running!"
-
-def send_message(text):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    data = {"chat_id": CHAT_ID, "text": text}
-    try:import os
-import time
-import threading
-import requests
-from flask import Flask
-
-TOKEN = os.getenv("TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-
-API_URL = "https://api.omanreal.com/api/Listing/GetListingsAndClusters?includeMapMarkers=true"
-
 sent_ids = set()
 
 app = Flask(__name__)
@@ -104,6 +79,4 @@ t.start()
 
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port)
-
-
 
