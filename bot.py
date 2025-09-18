@@ -11,7 +11,7 @@ CHAT_ID = os.getenv("CHAT_ID")
 BASE_URL = "https://omanreal.com/p"
 
 # Allowed locations
-TARGET_LOCATIONS = ["Muscat", "Al Amerat", "Barka", "Yiti"]
+TARGET_LOCATIONS = ["Muscat", "Al Amrat", "Barka", "Yiti"]
 # Only accept Barka if it includes Fuleij
 SPECIAL_BARKA = ["Fuleij", "Al Fuleij", "Fuleij Al Maamura", "Al Fuleij Al Maamoura"]
 
