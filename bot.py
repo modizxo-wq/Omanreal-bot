@@ -32,7 +32,6 @@ def check_new_properties():
     try:
         send_message("🔍 Checking new properties...")
 
-        # نضيف نفس الـ headers اللي يرسلها المتصفح
         headers = {
             "Content-Type": "application/json",
             "Accept": "*/*",
@@ -40,25 +39,42 @@ def check_new_properties():
             "Referer": "https://omanreal.com/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
 
-            # ⚠️ هنا لازم تحطي الكوكيز اللي نسختيها من المتصفح كاملة
+            # ⚠️ انسخي الكوكي كامل من المتصفح وحطيه هنا
             "Cookie": "bi=aYB4YWRAS65MJBtnLSqS6%2BJ4OXkSp2X%2BC97cXwp3n5s%3D; nltm=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImRjYzdjMzNkLTExZjItNGVmMi1hYjVjLWFjZGQ4ZjE3YThmOSIsImp0aSI6Im9qRTUwdiIsInJvbGUiOiJBbm9ueW1vdXMiLCJ1c2VyX2ludGVybmFsX2lkIjoiODI3MDg3OTIiLCJuYmYiOjE3NTgxNjg1NDksImV4cCI6MTc2ODUzNjU0OSwiaWF0IjoxNzU4MTY4NTQ5LCJpc3MiOiJPbWFuIFJlYWwifQ.IIu0MuDH0QqKP1Y-hY4Ed0FFabs5n8ydIHBsyl7R8eY; _ga=GA1.1.941230911.1758168550; _ga_WEDBP3L8G9=GS2.1.s1758193792$o6$g1$t1758193811$j41$l0$h0"
         }
 
-        # POST مع body فاضي (زي ما يطلب الـ API)
-        resp = requests.post(API_URL, headers=headers, json={}, timeout=20)
+        payload = {
+            "maxNumItems": 300,
+            "sortOption": {"sortBy": 2, "sortDir": 2},
+            "filters": {
+                "keywords": "",
+                "categories": [],
+                "addresses": [],
+                "amenities": [],
+                "featureOptions": []
+            },
+            "geoRegion": {
+                "ne": {"lat": 25.160947720037903, "lng": 59.85804147656248},
+                "sw": {"lat": 21.72965175263424, "lng": 56.94666452343748}
+            },
+            "zoom": 8,
+            "users": [],
+            "price": {},
+            "numFeatures": []
+        }
+
+        resp = requests.post(API_URL, headers=headers, json=payload, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
         listings = data.get("items", [])
         send_message(f"ℹ️ API returned {len(listings)} items")
 
-        # Debug: نرسل أول إعلان كـ raw JSON للتأكد
         if listings:
             first_item = listings[0]
             send_message(f"📝 First item raw data:\n{str(first_item)[:500]}")
 
-        # مؤقت: نرسل أول 3 إعلانات فقط
-        for item in listings[:3]:
+        for item in listings[:3]:  # مؤقت: أول 3 إعلانات فقط
             item_id = item.get("id")
             slug = item.get("slug")
             title = item.get("title", "Unknown")
@@ -87,7 +103,7 @@ def check_new_properties():
 
 def run_bot():
     send_message("🚀 Thread started: Bot will check every 30 seconds")
-    send_message("✅ Bot started via API (TEST MODE: POST request with headers)")
+    send_message("✅ Bot started via API (TEST MODE: POST request with payload)")
     while True:
         check_new_properties()
         time.sleep(30)
