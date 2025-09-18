@@ -30,13 +30,13 @@ def send_message(text):
 def check_new_properties():
     global sent_ids
     try:
-        print("🔍 Checking new properties...")
+        send_message("🔍 Checking new properties...")
         resp = requests.get(API_URL, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
         listings = data.get("items", [])
-        print(f"ℹ️ API returned {len(listings)} items")
+        send_message(f"ℹ️ API returned {len(listings)} items")
 
         # نجرب نرسل أول 3 إعلانات فقط بدون فلترة
         for item in listings[:3]:
@@ -59,15 +59,15 @@ def check_new_properties():
                 f"🔗 Link: {link}"
             )
             send_message(msg)
-            print(f"✅ Sent TEST property: {title} | {addresses} | {price} R.O")
+            send_message(f"✅ Sent TEST property: {title} | {addresses} | {price} R.O")
 
             sent_ids.add(item_id)
 
     except Exception as e:
-        print("❌ Error fetching API listings:", e)
+        send_message(f"❌ Error fetching API listings: {e}")
 
 def run_bot():
-    print("🚀 Thread started: Bot will check every 30 seconds")
+    send_message("🚀 Thread started: Bot will check every 30 seconds")
     send_message("✅ Bot started via API (TEST MODE: sending first 3 items)")
     while True:
         check_new_properties()
@@ -79,4 +79,3 @@ t.start()
 
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port)
-
