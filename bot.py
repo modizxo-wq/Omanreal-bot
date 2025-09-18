@@ -86,11 +86,11 @@ def check_new_properties():
         print("❌ Error fetching API listings:", e)
 
 def run_bot():
-    send_message("✅ Bot started via API (every 10 min)")
-    print("🚀 Bot started, will check every 10 minutes")
+    send_message("✅ Bot started via API (every 30 sec for testing)")
+    print("🚀 Bot started, will check every 30 seconds (testing mode)")
     while True:
         check_new_properties()
-        time.sleep(600)
+        time.sleep(30)  # ⏳ بدل 600 ثانية
 
 if __name__ == "__main__":
     t = threading.Thread(target=run_bot)
