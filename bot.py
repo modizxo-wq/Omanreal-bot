@@ -13,6 +13,9 @@ TARGET_LOCATIONS = ["Muscat", "Al Amerat", "Barka", "Yiti"]
 # Only accept Barka if it includes Fuleij
 SPECIAL_BARKA = ["Fuleij", "Al Fuleij", "Fuleij Al Maamura", "Al Fuleij Al Maamoura"]
 
+# Keep track of already sent links
+sent_links = set()
+
 def send_message(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     data = {"chat_id": CHAT_ID, "text": text}
@@ -22,6 +25,7 @@ def send_message(text):
         print("Error sending message:", e)
 
 def check_new_properties():
+    global sent_links
     try:
         r = requests.get(BASE_URL, timeout=15)
         soup = BeautifulSoup(r.text, "html.parser")
@@ -34,6 +38,10 @@ def check_new_properties():
             location = card.find("div", class_="location").get_text(strip=True) if card.find("div", class_="location") else "Unknown"
             size = card.find("div", class_="area").get_text(strip=True) if card.find("div", class_="area") else "Not specified"
             link = "https://omanreal.com" + card.find("a")["href"]
+
+            # Skip if already sent
+            if link in sent_links:
+                continue
 
             # Filter: only Residential
             if "Residential" not in title:
@@ -57,6 +65,9 @@ def check_new_properties():
                 f"🔗 Link: {link}"
             )
             send_message(msg)
+
+            # Mark as sent
+            sent_links.add(link)
 
     except Exception as e:
         print("Error checking properties:", e)
