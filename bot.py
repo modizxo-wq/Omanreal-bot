@@ -26,16 +26,19 @@ def send_message(text):
     try:
         requests.post(url, data=data)
     except Exception as e:
-        print("Error sending message:", e)
+        print("❌ Error sending message:", e)
 
 def check_new_properties():
     global sent_ids
     try:
+        print("🔍 Checking new properties...")
         resp = requests.get(API_URL, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
         listings = data.get("items", [])
+        print(f"ℹ️ API returned {len(listings)} items")
+
         for item in listings:
             item_id = item.get("id")
             slug = item.get("slug")
@@ -47,20 +50,24 @@ def check_new_properties():
 
             # Skip if already sent
             if item_id in sent_ids:
+                print(f"⏩ Skipping (already sent): {title}")
                 continue
 
             # فلترة: Residential فقط
             if "residential" not in title.lower():
+                print(f"⏩ Skipping (not residential): {title}")
                 continue
 
             # فلترة: الموقع
             loc_lower = addresses.lower()
             if not any(loc in loc_lower for loc in TARGET_LOCATIONS):
+                print(f"⏩ Skipping (location not in target): {addresses}")
                 continue
 
             # فلترة خاصة ببركا
             if "barka" in loc_lower:
                 if not any(keyword in loc_lower for keyword in SPECIAL_BARKA):
+                    print(f"⏩ Skipping (Barka but not Fuleij): {addresses}")
                     continue
 
             msg = (
@@ -71,14 +78,16 @@ def check_new_properties():
                 f"🔗 Link: {link}"
             )
             send_message(msg)
+            print(f"✅ Sent property: {title} | {addresses} | {price} R.O")
 
             sent_ids.add(item_id)
 
     except Exception as e:
-        print("Error fetching API listings:", e)
+        print("❌ Error fetching API listings:", e)
 
 def run_bot():
     send_message("✅ Bot started via API (every 10 min)")
+    print("🚀 Bot started, will check every 10 minutes")
     while True:
         check_new_properties()
         time.sleep(600)
@@ -89,4 +98,3 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
