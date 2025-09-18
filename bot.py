@@ -31,14 +31,22 @@ def check_new_properties():
     global sent_ids
     try:
         send_message("🔍 Checking new properties...")
-        resp = requests.get(API_URL, timeout=20)
+
+        headers = {"Content-Type": "application/json"}
+        # POST request with empty body
+        resp = requests.post(API_URL, headers=headers, json={}, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
         listings = data.get("items", [])
         send_message(f"ℹ️ API returned {len(listings)} items")
 
-        # نجرب نرسل أول 3 إعلانات فقط بدون فلترة
+        # Debug: أرسل أول إعلان كـ JSON للتأكد
+        if listings:
+            first_item = listings[0]
+            send_message(f"📝 First item raw data:\n{str(first_item)[:500]}")
+
+        # مؤقت: نرسل أول 3 إعلانات فقط
         for item in listings[:3]:
             item_id = item.get("id")
             slug = item.get("slug")
@@ -68,10 +76,10 @@ def check_new_properties():
 
 def run_bot():
     send_message("🚀 Thread started: Bot will check every 30 seconds")
-    send_message("✅ Bot started via API (TEST MODE: sending first 3 items)")
+    send_message("✅ Bot started via API (TEST MODE: POST request)")
     while True:
         check_new_properties()
-        time.sleep(30)  # 30 ثانية للتجربة
+        time.sleep(30)
 
 # ✅ نشغل البوت مباشرة
 t = threading.Thread(target=run_bot, daemon=True)
