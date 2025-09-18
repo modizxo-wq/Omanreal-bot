@@ -92,9 +92,10 @@ def run_bot():
         check_new_properties()
         time.sleep(30)  # ⏳ بدل 600 ثانية
 
-if __name__ == "__main__":
-    t = threading.Thread(target=run_bot)
-    t.start()
+# ✅ خلي الـ thread يشتغل مباشرة
+t = threading.Thread(target=run_bot, daemon=True)
+t.start()
 
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+port = int(os.environ.get("PORT", 5000))
+app.run(host="0.0.0.0", port=port)
+
