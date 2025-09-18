@@ -24,9 +24,11 @@ def send_message(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     data = {"chat_id": CHAT_ID, "text": text}
     try:
-        requests.post(url, data=data)
+        resp = requests.post(url, data=data, timeout=15)
+        resp.raise_for_status()
+        print(f"📨 Sent Telegram message: {text[:50]}...")
     except Exception as e:
-        print("❌ Error sending message:", e)
+        print("❌ Error sending message to Telegram:", e)
 
 def check_new_properties():
     global sent_ids
@@ -45,7 +47,7 @@ def check_new_properties():
             title = item.get("title", "Unknown")
             price = item.get("price", "Not mentioned")
             addresses = " / ".join([a["title"] for a in item.get("address", [])])
-            size = " / ".join([f'{f["value"]} {f["item"]}' for f in item.get("featureSnippets", [])]) or "Not specified"
+            size = " / ".join([f'{f['value']} {f['item']}' for f in item.get("featureSnippets", [])]) or "Not specified"
             link = f"https://omanreal.com/p/{slug}"
 
             # Skip if already sent
@@ -86,11 +88,11 @@ def check_new_properties():
         print("❌ Error fetching API listings:", e)
 
 def run_bot():
+    print("🚀 Thread started: Bot will check every 30 seconds")
     send_message("✅ Bot started via API (every 30 sec for testing)")
-    print("🚀 Bot started, will check every 30 seconds (testing mode)")
     while True:
         check_new_properties()
-        time.sleep(30)  # ⏳ بدل 600 ثانية
+        time.sleep(30)  # حالياً 30 ثانية للتجربة
 
 # ✅ خلي الـ thread يشتغل مباشرة
 t = threading.Thread(target=run_bot, daemon=True)
@@ -98,4 +100,5 @@ t.start()
 
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port)
+
 
