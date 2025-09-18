@@ -23,6 +23,28 @@ def home():
 def send_message(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     data = {"chat_id": CHAT_ID, "text": text}
+    try:import os
+import time
+import threading
+import requests
+from flask import Flask
+
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+
+API_URL = "https://api.omanreal.com/api/Listing/GetListingsAndClusters?includeMapMarkers=true"
+
+sent_ids = set()
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "✅ OmanReal API Bot is running!"
+
+def send_message(text):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    data = {"chat_id": CHAT_ID, "text": text}
     try:
         resp = requests.post(url, data=data, timeout=15)
         resp.raise_for_status()
@@ -41,36 +63,18 @@ def check_new_properties():
         listings = data.get("items", [])
         print(f"ℹ️ API returned {len(listings)} items")
 
-        for item in listings:
+        # نجرب نرسل أول 3 إعلانات فقط بدون فلترة
+        for item in listings[:3]:
             item_id = item.get("id")
             slug = item.get("slug")
             title = item.get("title", "Unknown")
             price = item.get("price", "Not mentioned")
             addresses = " / ".join([a["title"] for a in item.get("address", [])])
-            size = " / ".join([f'{f['value']} {f['item']}' for f in item.get("featureSnippets", [])]) or "Not specified"
+            size = " / ".join([f"{f['value']} {f['item']}" for f in item.get("featureSnippets", [])]) or "Not specified"
             link = f"https://omanreal.com/p/{slug}"
 
-            # Skip if already sent
             if item_id in sent_ids:
-                print(f"⏩ Skipping (already sent): {title}")
                 continue
-
-            # فلترة: Residential فقط
-            if "residential" not in title.lower():
-                print(f"⏩ Skipping (not residential): {title}")
-                continue
-
-            # فلترة: الموقع
-            loc_lower = addresses.lower()
-            if not any(loc in loc_lower for loc in TARGET_LOCATIONS):
-                print(f"⏩ Skipping (location not in target): {addresses}")
-                continue
-
-            # فلترة خاصة ببركا
-            if "barka" in loc_lower:
-                if not any(keyword in loc_lower for keyword in SPECIAL_BARKA):
-                    print(f"⏩ Skipping (Barka but not Fuleij): {addresses}")
-                    continue
 
             msg = (
                 f"🏠 {title}\n"
@@ -80,7 +84,7 @@ def check_new_properties():
                 f"🔗 Link: {link}"
             )
             send_message(msg)
-            print(f"✅ Sent property: {title} | {addresses} | {price} R.O")
+            print(f"✅ Sent TEST property: {title} | {addresses} | {price} R.O")
 
             sent_ids.add(item_id)
 
@@ -89,16 +93,17 @@ def check_new_properties():
 
 def run_bot():
     print("🚀 Thread started: Bot will check every 30 seconds")
-    send_message("✅ Bot started via API (every 30 sec for testing)")
+    send_message("✅ Bot started via API (TEST MODE: sending first 3 items)")
     while True:
         check_new_properties()
-        time.sleep(30)  # حالياً 30 ثانية للتجربة
+        time.sleep(30)  # 30 ثانية للتجربة
 
-# ✅ خلي الـ thread يشتغل مباشرة
+# ✅ نشغل البوت مباشرة
 t = threading.Thread(target=run_bot, daemon=True)
 t.start()
 
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port)
+
 
 
