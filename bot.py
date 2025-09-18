@@ -1,7 +1,9 @@
 import os
 import time
+import threading
 import requests
 from bs4 import BeautifulSoup
+from flask import Flask
 
 TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -15,6 +17,13 @@ SPECIAL_BARKA = ["Fuleij", "Al Fuleij", "Fuleij Al Maamura", "Al Fuleij Al Maamo
 
 # Keep track of already sent links
 sent_links = set()
+
+# Flask app (لازم عشان Render ما يعطي Error)
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "✅ OmanReal Bot is running!"
 
 def send_message(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -56,7 +65,6 @@ def check_new_properties():
                 if not any(keyword in location for keyword in SPECIAL_BARKA):
                     continue
 
-            # Send details
             msg = (
                 f"🏠 {title}\n"
                 f"📍 Location: {location}\n"
@@ -72,8 +80,18 @@ def check_new_properties():
     except Exception as e:
         print("Error checking properties:", e)
 
-if __name__ == "__main__":
+def run_bot():
     send_message("✅ Bot started and running (every 10 min)")
     while True:
         check_new_properties()
         time.sleep(600)  # every 10 minutes
+
+if __name__ == "__main__":
+    # نشغل البوت في Thread
+    t = threading.Thread(target=run_bot)
+    t.start()
+
+    # نشغل Flask على البورت اللي يطلبه Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
